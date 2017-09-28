@@ -35,7 +35,8 @@ app = Flask(__name__)
 app.config.from_object('juramote.http.DefaultConfig')
 app.config.from_envvar('JURAMOTE_SETTINGS')
 machine = Stateful (app.config['TTY_PATH'])
-logging.basicConfig (level=logging.DEBUG)
+if app.config['DEBUG']:
+    logging.basicConfig (level=logging.DEBUG)
 
 def authenticated (permission):
     """
