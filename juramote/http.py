@@ -111,7 +111,7 @@ def rawCommand ():
 @authenticated('r')
 def info ():
     try:
-        data = {'type': machine.getType (), 'counter': {}}
+        data = {'type': machine.getType (), 'loader': machine.getLoader (), 'counter': {}}
         for name, member in machine.machine.eeprom.__members__.items():
             if name.startswith ('COUNT_'):
                 data['counter'][name[6:]] = machine.readEeprom (member)

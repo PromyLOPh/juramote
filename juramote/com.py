@@ -150,7 +150,16 @@ class Raw:
         l = self._receive ()
         if not l.startswith (expected):
             raise ValueError ('invalid response')
-        return codecs.decode (l[len (expected):], 'hex')        
+        return codecs.decode (l[len (expected):], 'hex')
+
+    def _receiveString (self, expected):
+        """
+        Receive latin1 string
+        """
+        l = self._receive ()
+        if not l.startswith (expected):
+            raise ValueError ('invalid response')
+        return l[len (expected):].decode ('latin1')
 
     def readEeprom (self, address):
         """
@@ -192,10 +201,14 @@ class Raw:
         Get machine type
         """
         self._send (b'TY:')
-        l = self._receive ()
-        if not l.startswith (b'ty:'):
-            raise ValueError ('invalid response')
-        return l[3:].decode ('ascii')
+        return self._receiveString (b'ty:')
+
+    def getLoader (self):
+        """
+        Get bootloader(?) version string
+        """
+        self._send (b'TL:')
+        return self._receiveString (b'tl:')
 
     def resetDisplay (self):
         """

@@ -62,7 +62,7 @@ class Cli:
         """
         Display machine status
         """
-        data = {'type': machine.getType ().decode ('ascii'), 'counter': {}}
+        data = {'type': machine.getType (), 'loader': machine.getLoader (), 'counter': {}}
         for name, member in ImpressaXs90Eeprom.__members__.items():
             if name.startswith ('COUNT_'):
                 data['counter'][name[6:]] = machine.readEeprom (member)
