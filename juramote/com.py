@@ -37,7 +37,7 @@ class Raw:
 
     def __init__ (self, tty):
         # XXX: auto-detect machine type
-        self.s = serial.Serial (tty, 9600, timeout=1)
+        self.s = serial.Serial (tty, 9600, timeout=30)
         self._test ()
         self.machine = ImpressaXs90
 
