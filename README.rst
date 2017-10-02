@@ -1,15 +1,31 @@
 juramote
 ========
 
-Remote control for Jura coffee maker Xs90 (EF516M V01.25).
+Remote control for Jura_ coffee maker. Currently supported:
+
+- Xs90 (EF516M V01.25)
+
+.. _Jura: https://www.jura.com/
 
 Usage
 -----
 
-The software works on any machine running Python, but using a Raspberry Pi
-(Zero W) is recommended. Standard pip install procedure is supported::
+This software depends on Python. Both 2.7 and 3 should work. It also requires
+the following packages to be installed. They are available from pypi_:
 
+- pyserial
+- Flask
+- wtforms
+
+.. _pypi: https://pypi.python.org/
+
+The standard setuptools-based install is supported and thus as easy as typing::
+
+    git clone https://github.com/PromyLOPh/juramote.git
+    cd juramote
     pip install .
+
+However using a virtual environment is highly recommended.
 
 Then use ``juramotecli`` for a command line interface or set up nginx/uwsgi for
 remote HTTP access. See directory contrib/ for example configs.
