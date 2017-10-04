@@ -240,7 +240,7 @@ class Raw:
         self._send (cmd.encode ('latin1'))
         return self._receive ().decode ('latin1')
 
-class Timeout (Exception):
+class Busy (Exception):
     pass
 
 def locked (f):
@@ -248,7 +248,7 @@ def locked (f):
     def decorator(*args, **kwargs):
         self = args[0]
         if not self.lock.acquire (timeout=self.timeout):
-            raise Timeout ()
+            raise Busy ()
         try:
             ret = f(*args, **kwargs)
         finally:
