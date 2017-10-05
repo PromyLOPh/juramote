@@ -379,15 +379,7 @@ class ImpressaXs90Input (IntEnum):
     """
     Bit position in status word.
     """
-    # 0: always zero?
-    # 1: zero when cleaning required/coffee grounds full/water tank missing?
-    # 2: zero when cleaning required/coffee grounds full?
-    # 3: toggling
-    # 8: True if grinder running, sometimes true when brewing, True when water tank was just inserted?
-    # 10: toggling
-    # 12: always one?
-    # 20/21: toggling
-    # 22: toggles to zero every once in a while
+    pass
 
 class ImpressaXs90:
     buttons = ImpressaXs90Buttons

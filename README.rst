@@ -59,9 +59,28 @@ commands. Integer, arguments or response, are usually hex-encoded (uppercase).
 CB: → cb:00
     Unknown.
 CM: → cm:300E8006006000000000000000000
-    Unknown.
+    Status information. Some values are equivalent to those returned by HZ_:
+
+    .. code:: python
+
+       cm[0] = hz[6]
+       cm[1:5] = hz[2]
+
 CS: → cs:03EC0562300E800000000000000600601C1
-    Unknown.
+    Sensor(?) status information. Some values are equivalent to
+    those returned by HZ_:
+
+    .. code:: python
+
+        cs[0:4] = hz[4]
+        cs[4:8] = hz[5]
+        cs[9:13] = hz[2]
+        cs[31:35] = hz[3]
+
+    19:22
+        Nonzero when brewing, 0x1FF for the first step, 0x3FF for the second
+    22:25
+        Nonzero (usually 0x3FF) when grinding
 DA:<message>
     Print permanent message on display. Argument is latin1 encoded string.
 DR:
@@ -77,9 +96,37 @@ GB:
 
     .. discovery missing for gc…gz
 HZ: → hz:0100011100000,0291,00E9,0001,03FC,0543,3,100100,0000,00
-    Unknown status information.
+    .. _HZ:
+
+    Status information, comma-separated.
+
+    0. Unknown bitfield. Bit 3 is one when milk pump(?) is on. Bit 6 is zero when brewing.
+    1. Unknown
+    2. Some kind of brewing sensor, 0xe8 when idle, goes up to ~0x255 when
+       brewing.
+    3. Flow meter(?), reset to 0 before new product is made
+    4. Coffee heater temperature(?)
+    5. Milk heater temperature(?)
+    6. Brewer source/destination selection/encoder(?)
+        3
+            normal coffee
+        5
+            cappucino coffe
+        6
+            cappuccino milk
+    7. Unknown bitfield
+    8. Unknown
+    9. Unknown
 IC: →
     Read status from input board. No arguments.
+
+    Bit 1…0
+        Menu wheel on the left. State changes 00→01→11 or 11→10→00
+        for each tick.
+    Bit 8
+        Somehow related to water tank
+    Bit 10
+        Stops toggling if coffee grounds bowl is full
 KB: → kb:
     Unknown.
 LS: → ls:0,1,1,0,0,0,0,0,0,0,0,0,3,0
