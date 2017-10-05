@@ -271,6 +271,7 @@ class Stateful (Raw):
     readInput = locked (Raw.readInput)
     makeComponent = locked (Raw.makeComponent)
     getType = locked (Raw.getType)
+    getLoader = locked (Raw.getLoader)
     resetDisplay = locked (Raw.resetDisplay)
     printDisplay = locked (Raw.printDisplay)
     printDisplayDefault = locked (Raw.printDisplayDefault)
