@@ -32,7 +32,7 @@ class DefaultConfig:
     TTY_PATH = '/dev/ttyUSB0'
 
 app = Flask(__name__)
-app.config.from_object('juramote.http.DefaultConfig')
+app.config.from_object('juramote.server.DefaultConfig')
 app.config.from_envvar('JURAMOTE_SETTINGS')
 machine = Stateful (app.config['TTY_PATH'])
 if app.config['DEBUG']:

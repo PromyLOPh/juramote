@@ -18,6 +18,6 @@ setup(
     entry_points={
     'console_scripts': [
             'juramotecli = juramote.cli:main',
-            'juramotehttpd = juramote.http:main'],
+            'juramotehttpd = juramote.server:main'],
     },
 )
