@@ -20,7 +20,7 @@
 
 import serial, time, sys, logging, argparse, json, codecs
 from functools import wraps
-from enum import IntEnum
+from enum import IntEnum, Enum
 from datetime import datetime, timedelta
 from threading import Lock
 
@@ -210,6 +210,18 @@ class Raw:
         self._send (b'TL:')
         return self._receiveString (b'tl:')
 
+    def getHeaterSensors (self):
+        """
+        Get heater and brewing sensor/status information
+        """
+        self._send (b'HZ:')
+        v = self._receiveString (b'hz:').split (',')
+        for i in (0, 7, 9):
+            v[i] = int (v[i], 2)
+        for i in list (range (1, 7)) + [8]:
+            v[i] = int (v[i], 16)
+        return v
+
     def resetDisplay (self):
         """
         Reset display to default
@@ -256,6 +268,16 @@ def locked (f):
         return ret
     return decorator
 
+class State (Enum):
+    """
+    Current machine state
+    """
+    IDLE = 0
+    GRINDING = 1
+    BREWING = 2
+    FOAMING = 3
+    UNKNOWN = 99
+
 class Stateful (Raw):
     """
     Extends raw communnication by state: Thread-safety (locking), button press delay
@@ -272,6 +294,7 @@ class Stateful (Raw):
     makeComponent = locked (Raw.makeComponent)
     getType = locked (Raw.getType)
     getLoader = locked (Raw.getLoader)
+    getHeaterSensors = locked (Raw.getHeaterSensors)
     resetDisplay = locked (Raw.resetDisplay)
     printDisplay = locked (Raw.printDisplay)
     printDisplayDefault = locked (Raw.printDisplayDefault)
@@ -294,6 +317,21 @@ class Stateful (Raw):
             time.sleep (wait.total_seconds ())
         self.lastButtonPress = datetime.now ()
         return super ().pressButton (i)
+
+    def getState (self):
+        v = self.getHeaterSensors ()
+        brewerOn = ((v[0] >> 6) & 1) == 0
+        foamOn = ((v[0] >> 3) & 1) == 1
+        flow = v[3]
+        if flow == 0 and not brewerOn and not foamOn:
+            return State.GRINDING
+        elif brewerOn and not foamOn:
+            return State.BREWING
+        elif foamOn and not brewerOn:
+            return State.FOAMING
+        elif flow != 0 and not brewerOn and not foamOn:
+            return State.IDLE
+        return State.UNKNOWN
 
 class ImpressaXs90Buttons (IntEnum):
     """

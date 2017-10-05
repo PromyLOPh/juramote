@@ -119,6 +119,13 @@ def info ():
         abort (500)
     return jsonify (status='ok', response=data), 418
 
+@app.route ('/v1/status', methods=['GET'])
+@authenticated('r')
+def status ():
+    # TODO: flow meter, temperatures
+    data = {'state': machine.getState ().name}
+    return jsonify (status='ok', response=data), 418
+
 @app.route ('/v1/product', methods=['GET'])
 @authenticated('r')
 def listProducts ():
