@@ -66,12 +66,12 @@ def rawEepromFull ():
 @app.route ('/v1/raw/eeprom/<int:address>', methods=['GET'])
 @authenticated('rraw')
 def rawEeprom (address):
-    return jsonify (status='ok', response=machine.machine.readEeprom (address))
+    return jsonify (status='ok', response=machine.readEeprom (address))
 
 @app.route ('/v1/raw/eeprom/line/<int:address>', methods=['GET'])
 @authenticated('rraw')
 def rawEepromLine (address):
-    return jsonify (status='ok', response=machine.machine.readEepromLine (address))
+    return jsonify (status='ok', response=machine.readEepromLine (address))
 
 @app.route ('/v1/raw/input', methods=['GET'])
 @authenticated('rraw')
