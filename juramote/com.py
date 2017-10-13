@@ -171,6 +171,16 @@ class Raw:
         self._send ('RE:{:04X}'.format (address).encode ('ascii'))
         return self._receiveInt (b're:')
 
+    def writeEeprom (self, address, value):
+        """
+        Write a single word into EEPROM.
+
+        :param address: See readEeprom
+        :param value: The value
+        """
+        self._send ('WE:{:04X},{:04X}'.format (address, value).encode ('ascii'))
+        return self._receiveBool ()
+
     def readEepromLine (self, address):
         """
         Read 32 bytes from EEPROM.
@@ -289,6 +299,7 @@ class Stateful (Raw):
 
     # wrapped functions
     readEeprom = locked (Raw.readEeprom)
+    writeEeprom = locked (Raw.writeEeprom)
     readEepromLine = locked (Raw.readEepromLine)
     readInput = locked (Raw.readInput)
     makeComponent = locked (Raw.makeComponent)
