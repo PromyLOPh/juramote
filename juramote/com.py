@@ -23,6 +23,7 @@ from functools import wraps
 from enum import IntEnum, Enum
 from datetime import datetime, timedelta
 from threading import Lock
+from .decorator import locked
 
 log = logging.getLogger(__name__)
 
@@ -264,19 +265,6 @@ class Raw:
 
 class Busy (Exception):
     pass
-
-def locked (f):
-    @wraps(f)
-    def decorator(*args, **kwargs):
-        self = args[0]
-        if not self.lock.acquire (timeout=self.timeout):
-            raise Busy ()
-        try:
-            ret = f(*args, **kwargs)
-        finally:
-            self.lock.release ()
-        return ret
-    return decorator
 
 class State (Enum):
     """
