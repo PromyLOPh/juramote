@@ -112,24 +112,30 @@ def rawCommand ():
         abort (504)
 
 # high-level API
-@app.route ('/v1/info', methods=['GET'])
+@app.route ('/v1/firmware', methods=['GET'])
 @authenticated('r')
-def info ():
+def firmware ():
+    data = {'type': machine.getType (), 'loader': machine.getLoader ()}
+    return jsonify (status='ok', response=data)
+
+@app.route ('/v1/counter', methods=['GET'])
+@authenticated('r')
+def counter ():
     try:
-        data = {'type': machine.getType (), 'loader': machine.getLoader (), 'counter': {}}
+        data = {}
         for name, member in machine.machine.eeprom.__members__.items():
             if name.startswith ('COUNT_'):
-                data['counter'][name[6:]] = machine.readEeprom (member)
+                data[name[6:]] = machine.readEeprom (member)
     except ValueError:
         abort (500)
-    return jsonify (status='ok', response=data), 418
+    return jsonify (status='ok', response=data)
 
 @app.route ('/v1/status', methods=['GET'])
 @authenticated('r')
 def status ():
     # TODO: flow meter, temperatures
     data = {'state': machine.getState ().name}
-    return jsonify (status='ok', response=data), 418
+    return jsonify (status='ok', response=data)
 
 @app.route ('/v1/product', methods=['GET'])
 @authenticated('r')
