@@ -101,14 +101,16 @@ class Raw:
         """
         Send single command
         """
+        # if commands “time out” there may be a late anwer left behind in the
+        # buffers
+        self.s.reset_input_buffer ()
+        self.s.reset_output_buffer ()
+
         log.debug ('← {}'.format (command))
         command += b'\r\n'
         enc = self._encode (command)
         for b in enc:
-            #print (b)
             self.s.write (b)
-            # not sure if required, 8ms breaks between bytes
-            time.sleep (8/1000)
 
     def _receive (self):
         """

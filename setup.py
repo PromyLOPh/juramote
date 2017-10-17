@@ -11,7 +11,7 @@ setup(
     description='Remote control for Jura coffee maker.',
     long_description=open('README.rst').read(),
     install_requires=[
-        'pyserial',
+        'pyserial>=3',
         'Flask',
         'wtforms',
     ],
