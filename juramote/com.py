@@ -265,9 +265,6 @@ class Raw:
         self._send (cmd.encode ('latin1'))
         return self._receive ().decode ('latin1')
 
-class Busy (Exception):
-    pass
-
 class State (Enum):
     """
     Current machine state

@@ -1,5 +1,8 @@
 from functools import wraps
 
+class Busy (Exception):
+    pass
+
 def locked (f):
     """
     Per-instance locking for functions
