@@ -156,6 +156,8 @@ TL: → tl:R8Cx Loader V2.00
     Firmware loader version?
 TY: → ty:EF516M V01.25
     Firmware version?
+WE:address,value → ok:
+    Write a single word value to EEPROM at address, see RE_.
 XX: → xx:F
     Unknown
 
