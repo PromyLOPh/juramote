@@ -23,6 +23,7 @@ from functools import wraps
 from enum import IntEnum, Enum
 from datetime import datetime, timedelta
 from threading import Lock
+from collections import namedtuple
 from .decorator import locked
 
 log = logging.getLogger(__name__)
@@ -316,6 +317,13 @@ class Stateful (Raw):
         self.lastButtonPress = datetime.now ()
         return super ().pressButton (i)
 
+    @locked
+    def patchEeprom (self, address, f):
+        """
+        Atomic read-modify-write a single eeprom word
+        """
+        return Raw.writeEeprom (self, address, f (Raw.readEeprom (self, address)))
+
     def getState (self):
         v = self.getHeaterSensors ()
         brewerOn = ((v[0] >> 6) & 1) == 0
@@ -330,6 +338,87 @@ class Stateful (Raw):
         elif flow != 0 and not brewerOn and not foamOn:
             return State.IDLE
         return State.UNKNOWN
+
+    def getProductDefaults (self, product):
+        return ProductDefaults (*map (lambda x: x.get (self) if x else None, self.machine.products[product]))
+
+    def setProductDefaults (self, product, defaults):
+        for eeprom, v in zip (self.machine.products[product], defaults):
+            if eeprom is not None and v is not None:
+                eeprom.patch (self, v)
+
+    def make (self, product, defaults=None):
+        """
+        Make product
+        """
+        prev = None
+        if defaults:
+            prev = self.getProductDefaults (product)
+            self.setProductDefaults (product, defaults)
+
+        productToButton = {
+                Type.COFFEE: self.machine.buttons.COFFEE
+                }
+        self.pressButton (productToButton[product])
+        # XXX: is this actually required?
+        time.sleep (1)
+
+        if defaults:
+            self.setProductDefaults (product, prev)
+
+class EepromValue:
+    """
+    Maps EEPROM locations to pythonic values and vice versa
+    """
+
+    def __init__ (self, word, shift=0, mask=0xffff, scale=1, unit=int):
+        self.word = word
+        self.shift = shift
+        self.mask = mask
+        self.scale = scale
+        self.unit = unit
+
+    def get (self, machine):
+        """
+        Retrieve value from machine
+        """
+        v = machine.readEeprom (self.word)
+        return self.unit (((v>>self.shift)&self.mask)*self.scale)
+
+    def patch (self, machine, value):
+        """
+        Read-modify-write value to machine’s EEPROM
+        """
+        invmask = 0xffff^self.mask
+        f = lambda x: (x&invmask)|((int (value)//self.scale)<<self.shift)
+        return machine.patchEeprom (self.word, f)
+
+    def __repr__ (self):
+        return '<EepromValue {}(((@{}>>{})&{:x})*{})>'.format (self.unit, self.word, self.shift, self.mask, self.scale)
+
+class Type (Enum):
+    """
+    Product presets
+    """
+
+    WATER = 1
+    WATER_CUP = 2
+    CAPPUCCINO = 3
+    CAPPUCCINO_DOUBLE = 4
+    ESPRESSO = 5
+    ESPRESSO_DOUBLE = 6
+    LATTE = 7
+    MILK = 8
+    MILK_CUP = 9
+    COFFEE = 10
+    COFFEE_DOUBLE = 11
+
+class Temperature (IntEnum):
+    LOW = 0
+    NORMAL = 1
+    HIGH = 2
+
+ProductDefaults = namedtuple ('ProductDefaults', ['water', 'temperature', 'pause', 'milk', 'aroma'])
 
 class ImpressaXs90Buttons (IntEnum):
     """
@@ -383,5 +472,13 @@ class ImpressaXs90:
     buttons = ImpressaXs90Buttons
     eeprom = ImpressaXs90Eeprom
     input = ImpressaXs90Input
-
+    products = {
+        Type.COFFEE: ProductDefaults (
+                aroma = EepromValue (214, 4, 0xf),
+                temperature = EepromValue (214, 0, 0xf, unit=Temperature),
+                water = EepromValue (220, 0, 0xff, 5),
+                pause = None,
+                milk = None,
+                ),
+        }
 

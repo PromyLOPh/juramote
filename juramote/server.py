@@ -21,12 +21,10 @@
 from flask import Flask, request, abort
 from flask.json import jsonify
 from functools import wraps
-from wtforms import Form, IntegerField, validators
 from hashlib import sha512
 import time
 
 from .com import *
-from .recipes import *
 
 class DefaultConfig:
     TTY_PATH = '/dev/ttyUSB0'
@@ -140,42 +138,38 @@ def status ():
 @app.route ('/v1/product', methods=['GET'])
 @authenticated('r')
 def listProducts ():
-    return jsonify (status='ok', response=list (recipes.keys ()))
+    return jsonify (status='ok', response=list (map (lambda x: x.name, machine.machine.products.keys ())))
 
-class CoffeeForm (Form):
-    strength = IntegerField (validators=[validators.NumberRange (CoffeeRecipe.strength[0], CoffeeRecipe.strength[2])])
-    amount = IntegerField (validators=[validators.NumberRange (CoffeeRecipe.amount[0], CoffeeRecipe.amount[2])])
-
-class CappuccinoForm (Form):
-    strength = IntegerField (validators=[validators.NumberRange (CappuccinoRecipe.strength[0], CappuccinoRecipe.strength[2])])
-    amount = IntegerField (validators=[validators.NumberRange (CappuccinoRecipe.amount[0], CappuccinoRecipe.amount[2])])
-    milk = IntegerField (validators=[validators.NumberRange (CappuccinoRecipe.milk[0], CappuccinoRecipe.milk[2])])
-
-productForms = {
-    'coffee': CoffeeForm,
-    'cappuccino': CappuccinoForm,
-    }
+@app.route ('/v1/product/<name>/defaults', methods=['GET'])
+@authenticated('r')
+def getProductDefaults (name):
+    name = Type[name]
+    if name in machine.machine.products:
+        return jsonify (status='ok', response=machine.getProductDefaults (name))
+    else:
+        abort (404)
 
 # XXX: replace with Stateful state reading (ic:)
 productInProgress = Lock ()
 
-@app.route ('/v1/product/<name>', methods=['POST'])
+@app.route ('/v1/product/<name>/make', methods=['POST'])
 @authenticated('w')
 def makeProduct (name):
-    if name not in recipes:
-        abort (404)
-    form = productForms[name] (request.form)
-    if form.validate ():
+    name = Type[name]
+    if name in machine.machine.products:
+        form = request.form
+        defaults = {
+                'temperature': form.get ('temperature', None, Temperature),
+                'pause': form.get ('pause', None, int),
+                'milk': form.get ('milk', None, int),
+                'aroma': form.get ('aroma', None, int),
+                'water': form.get ('water', None, int),
+                }
+        defaults = ProductDefaults (**defaults)
         with productInProgress:
-            if name == 'coffee':
-                r = recipes[name] (machine, form.strength.data, form.amount.data)
-            elif name == 'cappuccino':
-                r = recipes[name] (machine, form.strength.data, form.amount.data, form.milk.data)
-            if r (machine):
-                return jsonify (status='ok')
-            else:
-                abort (500)
-    abort (500)
+            return jsonify (status='ok', response=machine.make (name, defaults))
+    else:
+        abort (404)
 
 # error handler
 @app.errorhandler(405)
