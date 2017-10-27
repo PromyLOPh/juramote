@@ -132,7 +132,7 @@ def counter ():
 @authenticated('r')
 def status ():
     # TODO: flow meter, temperatures
-    data = {'state': machine.getState ().name}
+    data = {'state': machine.getState ().name, 'flow': machine.getFlowMeter ()}
     return jsonify (status='ok', response=data)
 
 @app.route ('/v1/product', methods=['GET'])

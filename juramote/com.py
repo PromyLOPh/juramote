@@ -339,6 +339,15 @@ class Stateful (Raw):
             return State.IDLE
         return State.UNKNOWN
 
+    def getFlowMeter (self):
+        """
+        Get flow meter value in ml
+        """
+        # XXX: based on observations
+        scaler = 41/97
+        v = self.getHeaterSensors ()
+        return int (v[3]*scaler)
+
     def getProductDefaults (self, product):
         return ProductDefaults (*map (lambda x: x.get (self) if x else None, self.machine.products[product]))
 
