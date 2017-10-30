@@ -276,6 +276,8 @@ class State (Enum):
     FOAMING = 3
     UNKNOWN = 99
 
+MachineState = namedtuple ('MachineState', ['state', 'flow', 'coffeetemp', 'milktemp'])
+
 class Stateful (Raw):
     """
     Extends raw communnication by state: Thread-safety (locking), button press delay
@@ -324,8 +326,7 @@ class Stateful (Raw):
         """
         return Raw.writeEeprom (self, address, f (Raw.readEeprom (self, address)))
 
-    def getState (self):
-        v = self.getHeaterSensors ()
+    def _decodeState (self, v):
         brewerOn = ((v[0] >> 6) & 1) == 0
         foamOn = ((v[0] >> 3) & 1) == 1
         flow = v[3]
@@ -339,14 +340,29 @@ class Stateful (Raw):
             return State.IDLE
         return State.UNKNOWN
 
-    def getFlowMeter (self):
+    def _decodeFlow (self, v):
         """
         Get flow meter value in ml
         """
         # XXX: based on observations
         scaler = 41/97
-        v = self.getHeaterSensors ()
         return int (v[3]*scaler)
+
+    def _decodeTemperature (self, v):
+        # XXX: based on observations, take it with a grain of salt
+        scaler = 100/0x4c0
+        return (int (v[4]*scaler), int (v[5]*scaler))
+
+    @locked
+    def getHeaterSensors (self):
+        v = Raw.getHeaterSensors (self)
+        coffeetemp, milktemp = self._decodeTemperature (v)
+        return MachineState (state=self._decodeState (v),
+                flow=self._decodeFlow (v), coffeetemp=coffeetemp,
+                milktemp=milktemp)
+
+    def getState (self):
+        return self.getHeaterSensors ().state
 
     def getProductDefaults (self, product):
         return ProductDefaults (*map (lambda x: x.get (self) if x else None, self.machine.products[product]))
