@@ -143,7 +143,11 @@ def listProducts ():
 @app.route ('/v1/product/<name>/defaults', methods=['GET'])
 @authenticated('r')
 def getProductDefaults (name):
-    name = Type[name]
+    name = name.upper ()
+    try:
+        name = Type[name]
+    except KeyError:
+        abort (404)
     if name in machine.machine.products:
         return jsonify (status='ok', response=machine.getProductDefaults (name))
     else:
@@ -155,7 +159,11 @@ productInProgress = Lock ()
 @app.route ('/v1/product/<name>/make', methods=['POST'])
 @authenticated('w')
 def makeProduct (name):
-    name = Type[name]
+    name = name.upper ()
+    try:
+        name = Type[name]
+    except KeyError:
+        abort (404)
     if name in machine.machine.products:
         form = request.form
         defaults = {
