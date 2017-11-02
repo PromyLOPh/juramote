@@ -502,8 +502,23 @@ class ImpressaXs90:
                 aroma = EepromValue (214, 4, 0xf),
                 temperature = EepromValue (214, 0, 0xf, unit=Temperature),
                 water = EepromValue (220, 0, 0xff, 5),
-                pause = None,
-                milk = None,
+                pause = None, milk = None),
+        Type.ESPRESSO: ProductDefaults (
+                aroma = EepromValue (212, 4, 0xf),
+                temperature = EepromValue (212, 0, 0xf, unit=Temperature),
+                water = EepromValue (218, 0, 0xff, 5),
+                pause = None, milk = None),
+        Type.LATTE: ProductDefaults (
+                water = EepromValue (223, 0, 0xff, 5),
+                pause = EepromValue (186, 8, 0xff),
+                milk = EepromValue (186, 0, 0xff),
+                aroma = None, temperature = None),
+        Type.CAPPUCCINO: ProductDefaults (
+                aroma = EepromValue (216, 4, 0xf),
+                water = EepromValue (222, 0, 0xff, 5),
+                milk = EepromValue (184, 0, 0xff),
+                pause = EepromValue (184, 8, 0xff),
+                temperature = None,
                 ),
         }
 
