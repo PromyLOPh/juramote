@@ -164,6 +164,8 @@ def makeProduct (name):
         name = Type[name]
     except KeyError:
         abort (404)
+    if machine.getState () != State.IDLE:
+        abort (409)
     if name in machine.machine.products:
         form = request.form
         defaults = {
@@ -191,6 +193,10 @@ def notFound (e):
 @app.errorhandler(401)
 def permissionDenied (e):
     return jsonify (status='permissionDenied'), 401
+
+@app.errorhandler(409)
+def busy (e):
+    return jsonify (status='busy'), 409
 
 @app.errorhandler(500)
 def serverError (e):
