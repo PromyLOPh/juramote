@@ -22,6 +22,7 @@ from flask import Flask, request, abort
 from flask.json import jsonify
 from functools import wraps
 from hashlib import sha512
+from threading import Timer
 import time
 
 from .com import *
@@ -152,6 +153,15 @@ def getProductDefaults (name):
         return jsonify (status='ok', response=machine.getProductDefaults (name))
     else:
         abort (404)
+
+@app.route ('/v1/display', methods=['POST'])
+@authenticated('w')
+def display ():
+    # XXX: add locking
+    timeout = min (5, request.form.get ('timeout', 2, type=int))
+    t = Timer (timeout, machine.resetDisplay)
+    t.start ()
+    return jsonify (status='ok', response=machine.printDisplay (request.form.get ('text')))
 
 # XXX: replace with Stateful state reading (ic:)
 productInProgress = Lock ()
