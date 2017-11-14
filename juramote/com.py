@@ -381,10 +381,7 @@ class Stateful (Raw):
             prev = self.getProductDefaults (product)
             self.setProductDefaults (product, defaults)
 
-        productToButton = {
-                Type.COFFEE: self.machine.buttons.COFFEE
-                }
-        self.pressButton (productToButton[product])
+        self.pressButton (self.machine.buttons[product.name])
         # XXX: is this actually required?
         time.sleep (1)
 
@@ -448,6 +445,8 @@ ProductDefaults = namedtuple ('ProductDefaults', ['water', 'temperature', 'pause
 class ImpressaXs90Buttons (IntEnum):
     """
     Button mapping for Impressa Xs90, use with .pressButton()
+
+    These names must match those in Type, see Stateful.make
     """
     ONOFF = 1
     CLEAN = 2 # ?
